@@ -1,0 +1,9 @@
+{
+  "name": "Kindred Blooms: Early Educator Toolkit",
+  "description": "A developmentally appropriate activity generator for Pre-K through 1st-grade educators, focusing on calm, inclusive, and creative learning experiences using generative AI for text, images, and speech.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": []
+}
