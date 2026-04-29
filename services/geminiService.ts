@@ -276,11 +276,12 @@ export const generateLessonPlan = async (
 
 export const generateImageForPlan = async (title: string, theme: string, activities: string[]): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `A soft, high-quality artistic watercolor illustration for an early childhood lesson plan titled "${title}" with the theme "${theme}".
+  const prompt = `A soft, high-quality artistic watercolor illustration for an early childhood lesson plan themed around "${theme}" covering "${title}".
   Visual details: A group of 2-3 joyful Black and Brown children (diverse skin tones) collaborating peacefully in a sun-drenched, airy classroom or garden. Each child must have a distinctly different hairstyle chosen from this list: box braids, braids with beads, locs/dreads, twist outs, afro puffs, cornrows, natural coils, bantu knots. No two children should share the same hairstyle. Do not default to ponytails.
   Atmosphere: Calm, exploratory, and nurturing.
   Style: Minimalist watercolor, soft pastel color palette (sage, peach, sky blue), airy composition with gentle brushstrokes and visible paper texture.
-  Text legibility: If any text, letters, numbers, or words appear on papers, whiteboards, books, or objects in the scene, they must be right-side up and fully legible — never upside down, sideways, or mirrored.`;
+  CRITICAL: Do not include any title text, lesson plan titles, labels, or text overlays in the illustration. No floating text, captions, or headings of any kind.
+  If any incidental text appears naturally (e.g., on books or papers), it must be right-side up and fully legible — never upside down, sideways, or mirrored.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
