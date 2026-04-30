@@ -18,6 +18,7 @@ export interface WebResource {
   title: string;
   url: string;
   description: string;
+  searchQuery?: string;
 }
 
 export interface DownloadableGuide {

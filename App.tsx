@@ -7,6 +7,25 @@ import { generateActivity, generateActivityImage, generateSpeech, decodeBase64, 
 
 type AppScreen = 'home' | 'generate' | 'plans' | 'library' | 'profile' | 'resources';
 
+const buildWebSearchUrl = (baseUrl: string, searchQuery: string, ageGroup?: string): string => {
+  const q = encodeURIComponent(searchQuery);
+  const gradeMap: Record<string, string> = { '3': 'K', '4': 'K', '5': 'K', '6': '1', '7': '2' };
+  const grade = ageGroup ? gradeMap[ageGroup] ?? 'K' : 'K';
+  switch (baseUrl.replace(/\/$/, '')) {
+    case 'https://kids.nationalgeographic.com': return `https://kids.nationalgeographic.com/search?q=${q}`;
+    case 'https://www.readworks.org':        return `https://www.readworks.org/search#q=${q}&grade=${grade}`;
+    case 'https://www.zerotothree.org':      return `https://www.zerotothree.org/?s=${q}`;
+    case 'https://www.naeyc.org':            return `https://www.naeyc.org/search?query=${q}`;
+    case 'https://www.understood.org':       return `https://www.understood.org/search?q=${q}`;
+    case 'https://www.abcya.com':            return `https://www.abcya.com/games/search?q=${q}`;
+    case 'https://www.scholastic.com/parents': return `https://www.scholastic.com/parents/search-results.html?q=${q}`;
+    case 'https://www.khanacademy.org':      return `https://www.khanacademy.org/search?page_search_query=${q}`;
+    case 'https://www.education.com':        return `https://www.education.com/worksheets/?q=${q}`;
+    case 'https://learninglab.si.edu':       return `https://learninglab.si.edu/search?q=${q}`;
+    default:                                 return baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+  }
+};
+
 const CHOKING_HAZARD_REGEX = /\b(beads?|buttons?|coins?|marbles?|cotton\s+balls?|googly\s+eyes?|small\s+balls?|small\s+blocks?|pom[\s-]?poms?|sequins?|dice|die|tokens?|pebbles?|seeds?|small\s+stones?|gems?|jewels?|pasta|noodles?|dried\s+beans?|dry\s+beans?|erasers?|tacks?|thumbtacks?)\b/i;
 const isChokingHazard = (name: string) => CHOKING_HAZARD_REGEX.test(name);
 
@@ -57,6 +76,7 @@ const App: React.FC = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -130,14 +150,33 @@ const App: React.FC = () => {
   };
 
   const startScanner = async () => {
+    setScannerError(null);
     setIsScannerOpen(true);
     setMode('Scanner');
     setActiveScreen('generate');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera API not supported in this browser.');
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (err: any) {
       console.error('Camera error', err);
+      const message = err?.name === 'NotAllowedError'
+        ? 'Camera permission denied. Please allow camera access in your browser settings.'
+        : err?.name === 'NotFoundError'
+        ? 'No camera found on this device.'
+        : err?.message || 'Unable to open camera. Make sure you are on a secure (HTTPS) connection.';
+      setScannerError(message);
       setIsScannerOpen(false);
       setMode('Single');
     }
@@ -366,7 +405,7 @@ const App: React.FC = () => {
           activity.resources.webResources.forEach(r => {
             txt(`•  ${r.title}`, 10, false, clrS6, 3);
             txt(r.description, 8.5, false, clrS4, 8);
-            const rUrl = r.url.startsWith('http') ? r.url : `https://${r.url}`;
+            const rUrl = buildWebSearchUrl(r.url, r.searchQuery || activity.label, activity.ageGroup);
             linkTxt(rUrl, rUrl, 8);
             sp(1);
           });
@@ -507,7 +546,7 @@ const App: React.FC = () => {
           lessonPlan.resources.webResources.forEach(r => {
             txt(`•  ${r.title}`, 10, false, clrS6, 3);
             txt(r.description, 8.5, false, clrS4, 8);
-            const rUrl = r.url.startsWith('http') ? r.url : `https://${r.url}`;
+            const rUrl = buildWebSearchUrl(r.url, r.searchQuery || lessonPlan.title);
             linkTxt(rUrl, rUrl, 8);
             sp(1);
           });
@@ -616,7 +655,7 @@ const App: React.FC = () => {
           <ul className="space-y-3">
             {resources.webResources.map((r, i) => (
               <li key={i}>
-                <a href={r.url.startsWith('http') ? r.url : `https://${r.url}`} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-2 text-sm text-slate-700 hover:text-indigo-600 transition-colors">
+                <a href={buildWebSearchUrl(r.url, r.searchQuery || topic, ageGroup)} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-2 text-sm text-slate-700 hover:text-indigo-600 transition-colors">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full bg-indigo-300 shrink-0" />
                   <span className="font-medium group-hover:underline">{r.title}</span>
                 </a>
@@ -708,6 +747,11 @@ const App: React.FC = () => {
           <p className="text-[11px] text-slate-400 mt-2 text-center leading-relaxed px-1">
             Point your camera at classroom items — AI builds an activity from what it sees.
           </p>
+          {scannerError && (
+            <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2 text-center leading-relaxed">
+              {scannerError}
+            </p>
+          )}
         </section>
 
         <section>
@@ -784,7 +828,7 @@ const App: React.FC = () => {
       return (
         <div className="max-w-xl mx-auto flex flex-col items-center gap-8 py-12 animate-in fade-in slide-in-from-bottom-4">
           <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden border-8 border-white shadow-2xl bg-black">
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             <div className="absolute inset-0 pointer-events-none border-[40px] border-black/20 flex items-center justify-center">
               <div className="w-full h-full border-2 border-dashed border-white/50 rounded-3xl" />
             </div>

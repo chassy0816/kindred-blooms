@@ -35,11 +35,31 @@ For every activity and lesson plan, generate a "resources" object with all four 
 
 1. youtubeVideos (2-3 items): Suggest specific YouTube search queries an educator can use to find relevant instructional, read-aloud, or movement videos. Format: {title: "What this video covers", searchQuery: "the exact search string"}. Examples: "letter sounds phonics for preschoolers", "counting songs for toddlers", "feelings and emotions books read aloud pre-k".
 
-2. webResources (2-3 items): Recommend established educational websites relevant to the skill or theme. Use well-known sources like pbskids.org, readworks.org, zerotothree.org, naeyc.org, understood.org, starfall.com, abcya.com, scholastic.com/parents, khanacademy.org, or education.com. Format: {title, url, description}.
+2. webResources (2-3 items): Recommend established educational websites relevant to the skill or theme. Use ONLY these exact homepage URLs — never invent subpages or article paths that may not exist:
+- National Geographic Kids: https://kids.nationalgeographic.com
+- ReadWorks: https://www.readworks.org
+- Zero to Three: https://www.zerotothree.org
+- NAEYC: https://www.naeyc.org
+- Understood: https://www.understood.org
+- Starfall: https://www.starfall.com
+- ABCya: https://www.abcya.com
+- Scholastic Parents: https://www.scholastic.com/parents
+- Khan Academy: https://www.khanacademy.org
+- Education.com: https://www.education.com
+- Smithsonian Learning Lab: https://learninglab.si.edu
+The url field must be one of these exact strings. Also include a searchQuery field: a 2–5 word search term based on the activity topic and skill (e.g., "butterfly life cycle", "counting to 10", "feelings and emotions") that will be used to build a direct search link on that site. The description should explain what the site offers for this specific skill or topic. Format: {title, url, searchQuery, description}.
 
 3. downloadableGuides (1-2 items): Suggest free printable activity sheets, visual guides, or PDFs. Describe what the resource is and name where it can be found (Teachers Pay Teachers free section, Education.com, Super Teacher Worksheets, Teachers.net). Format: {title, description}.
 
-4. professionalContacts: CRITICAL — only populate if the activity's primary theme or skill directly involves: grief, loss, trauma, anxiety, anger management, emotional dysregulation, sensory processing challenges, speech/language development, fine motor delays, or other developmental/mental health concerns. If applicable, include 1-2 real national organizations such as NASP (nasponline.org), ASHA (asha.org), AOTA (aota.org), SAMHSA (samhsa.gov), Zero to Three (zerotothree.org), Child Mind Institute (childmind.org), or NAMI (nami.org). Format: {name, description, website}. Otherwise, return an EMPTY array [].`;
+4. professionalContacts: CRITICAL — only populate if the activity's primary theme or skill directly involves: grief, loss, trauma, anxiety, anger management, emotional dysregulation, sensory processing challenges, speech/language development, fine motor delays, or other developmental/mental health concerns. If applicable, include 1-2 from this list using ONLY these exact URLs:
+- NASP: https://www.nasponline.org
+- ASHA: https://www.asha.org
+- AOTA: https://www.aota.org
+- SAMHSA: https://www.samhsa.gov
+- Zero to Three: https://www.zerotothree.org
+- Child Mind Institute: https://childmind.org
+- NAMI: https://www.nami.org
+Format: {name, description, website}. Otherwise, return an EMPTY array [].`;
 
 const RESOURCES_SCHEMA = {
   type: Type.OBJECT,
@@ -62,9 +82,10 @@ const RESOURCES_SCHEMA = {
         properties: {
           title: { type: Type.STRING },
           url: { type: Type.STRING },
+          searchQuery: { type: Type.STRING },
           description: { type: Type.STRING }
         },
-        required: ["title", "url", "description"]
+        required: ["title", "url", "searchQuery", "description"]
       }
     },
     downloadableGuides: {
