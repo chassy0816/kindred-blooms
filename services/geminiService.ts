@@ -169,7 +169,7 @@ export const generateActivity = async (
   durationPreference: ActivityDuration,
   difficulty: DifficultyLevel
 ): Promise<Activity> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   
   let ageGuideline = age === '3' ? "1-3 steps, sensory exploration." : age === '4' ? "3-5 steps, simple curiosity." : age === '7' ? "5-7 steps, beginning reading/writing, place value, simple addition and subtraction, more independent work, and connections between concepts." : "4-6 steps, early literacy/math focus.";
   
@@ -211,7 +211,7 @@ export const generateActivityFromImage = async (
   age: AgeGroup,
   subject: Subject
 ): Promise<Activity> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   
   const prompt = `Identify the materials in this image and create ONE calm, developmentally appropriate activity for a ${age}-year-old child.
   Subject: ${subject}. 
@@ -247,7 +247,7 @@ export const generateLessonPlan = async (
   theme: string,
   difficulty: DifficultyLevel
 ): Promise<LessonPlan> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
   let difficultyGuideline = difficulty === 'Easy' ? "Focus on core basics." : difficulty === 'Hard' ? "Encourage more complex connections." : "Standard age-appropriate complexity.";
 
@@ -296,7 +296,7 @@ export const generateLessonPlan = async (
 };
 
 export const generateImageForPlan = async (title: string, theme: string, activities: string[]): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const prompt = `A soft, high-quality artistic watercolor illustration for an early childhood lesson plan themed around "${theme}" covering "${title}".
   Visual details: A group of 2-3 joyful Black and Brown children (diverse skin tones) collaborating peacefully in a sun-drenched, airy classroom or garden. Each child must have a distinctly different hairstyle chosen from this list: box braids, braids with beads, locs/dreads, twist outs, afro puffs, cornrows, natural coils, bantu knots. No two children should share the same hairstyle. Do not default to ponytails.
   Atmosphere: Calm, exploratory, and nurturing.
@@ -317,7 +317,7 @@ export const generateImageForPlan = async (title: string, theme: string, activit
 };
 
 export const generateActivityImage = async (activity: Activity): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const actionDescription = activity.steps.join(' ');
   const materialsList = activity.materials.map(m => m.name).join(', ');
 
@@ -341,7 +341,7 @@ export const generateActivityImage = async (activity: Activity): Promise<string>
 };
 
 export const generateSpeech = async (text: string): Promise<string | undefined> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text: `Read this activity guide warmly and slowly: ${text}` }] }],
